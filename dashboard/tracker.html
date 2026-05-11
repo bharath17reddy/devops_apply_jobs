@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Career-Ops Pipeline Tracker</title>
+<style>
+  body { font-family: Inter, system-ui, sans-serif; margin: 0; padding: 24px; background: #f3f4f6; color: #111827; }
+  h1 { margin-bottom: 8px; font-size: 2rem; }
+  p { margin: 0 0 16px; color: #4b5563; }
+  .summary { display: grid; grid-template-columns: repeat(auto-fit,minmax(180px,1fr)); gap: 12px; margin-bottom: 20px; }
+  .card { background: white; border: 1px solid #e5e7eb; border-radius: 12px; padding: 16px; box-shadow: 0 1px 2px rgba(15,23,42,0.05); }
+  .card strong { display: block; font-size: 1.3rem; margin-bottom: 6px; }
+  .filters { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; margin-bottom: 16px; }
+  .filters label { display: flex; align-items: center; gap: 8px; color: #374151; }
+  .filters select, .filters button { padding: 10px 12px; border: 1px solid #d1d5db; border-radius: 8px; background: white; color: #111827; }
+  table { width: 100%; border-collapse: collapse; background: white; border: 1px solid #e5e7eb; }
+  th, td { text-align: left; padding: 12px 14px; border-bottom: 1px solid #f3f4f6; font-size: 0.95rem; }
+  th { background: #f9fafb; color: #111827; font-weight: 700; }
+  tbody tr:hover { background: #f8fafc; }
+  .tag { display: inline-flex; padding: 4px 8px; border-radius: 999px; font-size: 0.82rem; font-weight: 600; }
+  .tag-top { background: #f0f9ff; color: #0369a1; }
+  .tag-applied { background: #ecfccb; color: #365314; }
+  .tag-evaluated { background: #e2e8f0; color: #0f172a; }
+  .tag-interview { background: #ede9fe; color: #5b21b6; }
+  .tag-skip { background: #f8fafc; color: #334155; }
+  a { color: #0f172a; text-decoration: none; }
+  a:hover { text-decoration: underline; }
+</style>
+</head>
+<body>
+  <h1>Career-Ops Pipeline Tracker</h1>
+  <p>Run <code>node export-pipeline-json.mjs ..</code> from the <code>dashboard</code> folder to refresh the data file.</p>
+  <div class="filters">
+    <label>
+      Show
+      <select id="statusFilter">
+        <option value="all">All</option>
+        <option value="evaluated">Evaluated</option>
+        <option value="applied">Applied</option>
+        <option value="interview">Interview</option>
+        <option value="offer">Offer</option>
+        <option value="skip">Skip</option>
+        <option value="top">Top ≥ 4.0</option>
+      </select>
+    </label>
+    <button id="refresh">Reload</button>
+    <button id="autoApply">Auto-Apply High Scores</button>
+  </div>
+  <div class="summary" id="summary"></div>
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Company</th>
+        <th>Role</th>
+        <th>Score</th>
+        <th>Status</th>
+        <th>Report</th>
+        <th>Notes</th>
+      </tr>
+    </thead>
+    <tbody id="tableBody"></tbody>
+  </table>
+<script>
+const statusFilter = document.getElementById('statusFilter');
+const refreshButton = document.getElementById('refresh');
+const autoApplyButton = document.getElementById('autoApply');
+const summary = document.getElementById('summary');
+const tableBody = document.getElementById('tableBody');
+let pipeline = [];
+
+function normalizeStatus(text) {
+  if (!text) return 'unknown';
+  const value = text.toLowerCase();
+  if (value.includes('interview')) return 'interview';
+  if (value.includes('offer')) return 'offer';
+  if (value.includes('applied')) return 'applied';
+  if (value.includes('responded')) return 'responded';
+  if (value.includes('discard')) return 'skip';
+  if (value.includes('skip')) return 'skip';
+  if (value.includes('evaluated')) return 'evaluated';
+  return value;
+}
+
+function statusTag(status, score) {
+  const normalized = normalizeStatus(status);
+  if (normalized === 'top' || score >= 4) return '<span class="tag tag-top">Top</span>';
+  if (normalized === 'applied') return '<span class="tag tag-applied">Applied</span>';
+  if (normalized === 'interview') return '<span class="tag tag-interview">Interview</span>';
+  if (normalized === 'offer') return '<span class="tag tag-applied">Offer</span>';
+  if (normalized === 'skip') return '<span class="tag tag-skip">Skip</span>';
+  return '<span class="tag tag-evaluated">Evaluated</span>';
+}
+
+function renderSummary(rows) {
+  const total = rows.length;
+  const top = rows.filter((row) => row.score >= 4).length;
+  const applied = rows.filter((row) => normalizeStatus(row.status) === 'applied').length;
+  const interview = rows.filter((row) => normalizeStatus(row.status) === 'interview').length;
+  const offer = rows.filter((row) => normalizeStatus(row.status) === 'offer').length;
+  summary.innerHTML = `
+    <div class="card"><strong>${total}</strong><span>Total jobs</span></div>
+    <div class="card"><strong>${top}</strong><span>Top jobs (≥4.0)</span></div>
+    <div class="card"><strong>${applied}</strong><span>Applied</span></div>
+    <div class="card"><strong>${interview}</strong><span>Interview</span></div>
+    <div class="card"><strong>${offer}</strong><span>Offers</span></div>
+  `;
+}
+
+function renderTable(rows) {
+  tableBody.innerHTML = rows.map((row, index) => {
+    const reportLink = row.report_path ? `<a href="${row.report_path}">${row.report_path}</a>` : row.report || '';
+    const notes = row.notes ? row.notes.replace(/https?:\/\/[^\s]+/g, (url) => `<a href="${url}" target="_blank" rel="noreferrer">${url}</a>`) : '';
+    const score = row.score != null ? row.score.toFixed(2) : '';
+    return `
+      <tr>
+        <td>${index + 1}</td>
+        <td>${row.company || ''}</td>
+        <td>${row.role || ''}</td>
+        <td>${score}</td>
+        <td>${statusTag(row.status, row.score)} ${row.status || ''}</td>
+        <td>${reportLink}</td>
+        <td>${notes}</td>
+      </tr>
+    `;
+  }).join('');
+}
+
+function filterRows(rows) {
+  const filter = statusFilter.value;
+  return rows.filter((row) => {
+    const normalized = normalizeStatus(row.status);
+    if (filter === 'all') return true;
+    if (filter === 'top') return row.score >= 4;
+    return normalized === filter;
+  });
+}
+
+async function loadPipeline() {
+  const response = await fetch('pipeline.json');
+  pipeline = await response.json();
+  const rows = pipeline.rows || [];
+  renderSummary(rows);
+  renderTable(filterRows(rows));
+}
+
+statusFilter.addEventListener('change', () => renderTable(filterRows(pipeline.rows || [])));
+refreshButton.addEventListener('click', () => loadPipeline());
+autoApplyButton.addEventListener('click', async () => {
+  if (!confirm('This will mark all jobs with score >= 3.9 as Applied. Continue?')) return;
+  try {
+    const response = await fetch('/auto-apply', { method: 'POST' });
+    const result = await response.json();
+    if (result.success) {
+      alert('Auto-apply completed successfully.');
+      loadPipeline(); // Reload data
+    } else {
+      alert('Auto-apply failed: ' + result.error);
+    }
+  } catch (err) {
+    alert('Error running auto-apply: ' + err.message);
+  }
+});
+loadPipeline().catch((err) => {
+  tableBody.innerHTML = `<tr><td colspan="7">Failed to load pipeline.json: ${err.message}</td></tr>`;
+});
+</script>
+</body>
+</html>

@@ -18,6 +18,9 @@ All scripts live in the project root as `.mjs` modules and are exposed via `npm 
 | `npm run rollback` | `update-system.mjs rollback` | Rollback last update |
 | `npm run liveness` | `check-liveness.mjs` | Test if job URLs are still active |
 | `npm run scan` | `scan.mjs` | Zero-token portal scanner |
+| `npm run auto-apply` | `auto-apply.mjs` | Mark high-score jobs as Applied |
+| `npm run export-pipeline` | `dashboard/export-pipeline-json.mjs` | Export tracker data for UI |
+| `npm run dashboard` | `dashboard/server.mjs` | Serve browser-based pipeline tracker |
 
 ---
 
@@ -187,3 +190,48 @@ npm run scan
 ```
 
 **Exit codes:** `0` scan completed, `1` configuration error or no portals.yml found.
+
+---
+
+## auto-apply
+
+Scans `applications.md` for jobs with score >= 3.9 that are not yet applied. Optionally marks them as "Applied" and/or opens their URLs in the browser.
+
+```bash
+npm run auto-apply -- --mark          # Mark eligible jobs as Applied
+npm run auto-apply -- --open          # Open URLs for eligible jobs
+npm run auto-apply -- --mark --open   # Do both
+```
+
+Lists eligible jobs and requires confirmation before marking.
+
+**Exit codes:** `0` success, `1` no applications.md found or no eligible jobs.
+
+---
+
+## export-pipeline
+
+Exports `applications.md` to JSON format for the browser-based dashboard UI.
+
+```bash
+npm run export-pipeline
+```
+
+Outputs `dashboard/pipeline.json` with parsed rows, scores, and URLs.
+
+**Exit codes:** `0` success, `1` file not found or parse error.
+
+---
+
+## dashboard
+
+Starts a local HTTP server serving the browser-based pipeline tracker UI. Provides API endpoints for automation.
+
+```bash
+npm run dashboard
+npm run dashboard -- --port=8080  # Custom port
+```
+
+Opens at http://localhost:3000 (or specified port). Includes a button to trigger auto-apply from the UI.
+
+**Exit codes:** Server runs until interrupted.

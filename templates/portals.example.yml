@@ -154,6 +154,41 @@ search_queries:
     query: 'site:apply.workable.com ("DevOps" OR "SRE" OR "Site Reliability" OR "Cloud Engineer" OR "Platform Engineer") remote'
     enabled: true
 
+  # -- LinkedIn --
+  - name: LinkedIn — DevOps / SRE / Platform
+    query: 'site:linkedin.com/jobs ("DevOps" OR "SRE" OR "Site Reliability" OR "Platform Engineer" OR "Infrastructure Engineer") remote'
+    enabled: true
+
+  - name: LinkedIn — Cloud / Kubernetes / Terraform
+    query: 'site:linkedin.com/jobs ("Cloud Engineer" OR Kubernetes OR K8s OR Terraform OR "Infrastructure as Code" OR IaC OR GitOps) remote'
+    enabled: true
+
+  # -- Naukri / Instahyre --
+  - name: Naukri — DevOps / Cloud / Platform
+    query: 'site:naukri.com ("DevOps" OR "SRE" OR "Site Reliability" OR "Platform Engineer" OR "Infrastructure Engineer" OR "Cloud Engineer")'
+    enabled: true
+
+  - name: Instahyre — DevOps / Cloud / Platform
+    query: 'site:instahyre.com ("DevOps" OR "SRE" OR "Site Reliability" OR "Platform Engineer" OR "Infrastructure Engineer" OR "Cloud Engineer")'
+    enabled: true
+
+  # -- India / INR local search --
+  - name: LinkedIn India — DevOps / Cloud
+    query: 'site:linkedin.com/jobs ("DevOps" OR "SRE" OR "Platform Engineer" OR "Cloud Engineer" OR "Infrastructure Engineer") (India OR Bangalore OR Hyderabad OR Pune OR Chennai OR Mumbai OR "Remote India")'
+    enabled: true
+
+  - name: Indeed India — DevOps / Cloud
+    query: 'site:indeed.co.in ("DevOps" OR "SRE" OR "Platform Engineer" OR "Cloud Engineer" OR "Infrastructure Engineer") (India OR Bangalore OR Hyderabad OR "Remote India")'
+    enabled: true
+
+  - name: Monster India — DevOps / Cloud
+    query: 'site:monsterindia.com ("DevOps" OR "SRE" OR "Platform Engineer" OR "Cloud Engineer" OR "Infrastructure Engineer") (India OR Bangalore OR Hyderabad OR "Remote India")'
+    enabled: true
+
+  - name: TimesJobs India — DevOps / Cloud
+    query: 'site:timesjobs.com ("DevOps" OR "SRE" OR "Platform Engineer" OR "Cloud Engineer" OR "Infrastructure Engineer") (India OR Bangalore OR Hyderabad OR "Remote India")'
+    enabled: true
+
   # -- No-Code / Low-Code / Automation --
   - name: Ashby — No-Code & Automation
     query: 'site:jobs.ashbyhq.com "no-code" OR "low-code" OR "automation engineer" OR "n8n" OR "Make" OR "Airtable" remote senior'

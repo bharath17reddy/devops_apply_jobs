@@ -12,7 +12,7 @@
 
 import { chromium } from 'playwright';
 import { resolve, dirname } from 'path';
-import { readFile } from 'fs/promises';
+import { readFile, writeFile } from 'fs/promises';
 import { mkdirSync } from 'fs';
 import { fileURLToPath } from 'url';
 
@@ -159,9 +159,16 @@ async function generatePDF() {
       preferCSSPageSize: false,
     });
 
-    // Write PDF
-    const { writeFile } = await import('fs/promises');
+    // Ensure output folder exists.
+    mkdirSync(dirname(outputPath), { recursive: true });
     await writeFile(outputPath, pdfBuffer);
+
+    // Optionally save a normalized HTML version for review and ATS debugging.
+    if (outputPath.toLowerCase().endsWith('.pdf')) {
+      const htmlOutputPath = `${outputPath.slice(0, -4)}.normalized.html`;
+      await writeFile(htmlOutputPath, html, 'utf-8');
+      console.log(`✅ Normalized HTML saved: ${htmlOutputPath}`);
+    }
 
     // Count pages (approximate from PDF structure)
     const pdfString = pdfBuffer.toString('latin1');

@@ -59,9 +59,9 @@ Built by someone who used it to evaluate 740+ job offers, generate 100+ tailored
 | **Interview Story Bank** | Accumulates STAR+Reflection stories across evaluations -- 5-10 master stories that answer any behavioral question |
 | **Negotiation Scripts** | Salary negotiation frameworks, geographic discount pushback, competing offer leverage |
 | **ATS PDF Generation** | Keyword-injected CVs with Space Grotesk + DM Sans design |
-| **Portal Scanner** | 45+ companies pre-configured (Anthropic, OpenAI, ElevenLabs, Retool, n8n...) + custom queries across Ashby, Greenhouse, Lever, Wellfound |
+| **Portal Scanner** | 45+ companies pre-configured (Anthropic, OpenAI, ElevenLabs, Retool, n8n...) + custom queries across Ashby, Greenhouse, Lever, Wellfound, LinkedIn, Naukri, Instahyre |
 | **Batch Processing** | Parallel evaluation with `claude -p` workers |
-| **Dashboard TUI** | Terminal UI to browse, filter, and sort your pipeline |
+| **Dashboard TUI** | Terminal UI to browse, filter, and sort your pipeline; browser tracker page available at `dashboard/tracker.html` |
 | **Human-in-the-Loop** | AI evaluates and recommends, you decide and act. The system never submits an application -- you always have the final call |
 | **Pipeline Integrity** | Automated merge, dedup, status normalization, health checks |
 
@@ -88,7 +88,6 @@ claude   # Open Claude Code in this directory
 
 # Then ask Claude to adapt the system to you:
 # "Change the archetypes to backend engineering roles"
-# "Translate the modes to English"
 # "Add these 5 companies to portals.yml"
 # "Update my profile with this CV I'm pasting"
 
@@ -163,6 +162,10 @@ Career-ops is a single slash command with multiple modes:
 /career-ops deep           → Deep company research
 /career-ops training       → Evaluate a course/cert
 /career-ops project        → Evaluate a portfolio project
+
+npm run export-pipeline     → Refresh dashboard tracker page data
+npm run auto-apply -- --mark --open  → Mark high-score jobs as Applied and open job URLs
+npm run dashboard             → Start browser-based pipeline tracker UI
 ```
 
 Or just paste a job URL or description directly -- career-ops auto-detects it and runs the full pipeline.
@@ -215,6 +218,12 @@ go build -o career-dashboard .
 ```
 
 Features: 6 filter tabs, 4 sort modes, grouped/flat view, lazy-loaded previews, inline status changes.
+
+A browser tracker page is also available at `dashboard/tracker.html`. Refresh the data by running:
+
+```bash
+npm run export-pipeline
+```
 
 ## Project Structure
 
